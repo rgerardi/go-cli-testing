@@ -1,0 +1,175 @@
+Testing CLI Tools with Go
+11 Jan 2018
+Tags: golang, cmdline, cli, testing
+
+Ricardo Gerardi
+@ricardogerardi
+http://github.com/rgerardi
+
+https://github.com/rgerardi/go-cli-testing
+
+* Who?
+
+.image ./img/2017-12-25-231043_621x309_scrot.png 500 _
+
+.caption _Gopher_ courtesy of [[https://gopherize.me/][Gopherize.me]]
+
+* Introduction
+.image ./img/DeathStar2.jpg 500 _
+
+: Why I like testing in Go
+: Testing is just part of the language
+: Uses the resources of the language
+: There is no one size fits all
+
+* What's wrong with this code?
+
+.code ./demo1/main.go
+
+: demo1
+
+* 1. Refactor code out of main()
+
+.html ./smallcode.html
+.html ./smallp.html
+_main.go_
+.code ./demo2/main.go /START OMIT/,/END OMIT/
+
+: demo2
+
+_main_test.go_
+.code ./demo2/main_test.go
+
+* 2. Leverage interfaces to facilitate tests
+
+: demo3
+
+E.g: Input data
+.html ./smallcode.html
+.code ./demo3/main.go /START OMIT/,/END OMIT/
+.code ./demo3/main_test.go /^func Test_ask/,/^}/
+
+* 2.1. Leverage interfaces to facilitate tests
+
+: demo3
+
+E.g: or Output...
+.html ./smallcode.html
+.code ./demo3/main.go /^func printSum/,/^}/
+.code ./demo3/main_test.go /^func Test_PrintSum/,/^}/
+
+* Test Coverage
+: demo3 + Test Coverage
+
+  $ go test -coverprofile=coverage.out
+  $ go tool cover -html=coverage.out
+
+.iframe ./demo3/coverage.html 450 1000
+
+* 3. Putting it all together
+: Demo 4
+: Show coverage improvements
+: function run() in main
+: Externalise all code out of main
+: Talk about test tags
+: Talk about other strategies: e.g. execute tool
+
+.html ./smallcode.html
+.code ./demo4/main.go /START OMIT/,/END OMIT/
+.code ./demo4/main_test.go /^func Test_Run/,/^}/
+
+* WARNING: Test Coverage can be misleading
+
+: Demo4 - force error
+
+- It does not indicate completeness
+- It is one of the indicators you should use
+
+- Include different cases
+- Include edge cases
+- Test error conditions
+- Go test cover has other "modes"
+
+[[https://blog.golang.org/cover][Test cover blog article]]
+
+* 4. Use Table-Driven tests and Sub-tests
+: Demo5
+: Demo6
+
+.html ./smallcode.html
+.code ./demo6/main_test.go /^func Test_Run/,/^}/
+
+* 4.1. Use Table-Driven tests and Sub-tests
+.html ./smallcode.html
+  $ go test -v . 
+
+  === RUN   Test_Add
+  --- PASS: Test_Add (0.00s)
+  === RUN   Test_askNumber
+  --- PASS: Test_askNumber (0.00s)
+  === RUN   Test_PrintSum
+  --- PASS: Test_PrintSum (0.00s)
+  === RUN   Test_Run
+  === RUN   Test_Run/2_ints
+  === RUN   Test_Run/2_floats
+  === RUN   Test_Run/blank
+  === RUN   Test_Run/first_text
+  === RUN   Test_Run/second_text
+  --- PASS: Test_Run (0.00s)
+      --- PASS: Test_Run/2_ints (0.00s)
+          main_test.go:70: Message: The sum is: 10
+      --- PASS: Test_Run/2_floats (0.00s)
+          main_test.go:70: Message: The sum is: 5.6
+      --- PASS: Test_Run/blank (0.00s)
+          main_test.go:70: Message:
+      --- PASS: Test_Run/first_text (0.00s)
+          main_test.go:70: Message:
+      --- PASS: Test_Run/second_text (0.00s)
+          main_test.go:70: Message:
+  PASS
+  ok      github.com/rgerardi/go-cli-testing/demo6      0.002s
+
+* 5. Use different techniques to test files and flags
+
+* Considerations
+- Depends on the requirements/testing goals
+- We don't want to test the Std Lib implementation
+- We want to test our business logic
+- Trust the Std Lib and 3rd party packages you use
+
+* 5.1 Require interfaces instead of *os.File
+
+Consider the minimal interface that implements only what is required by the function
+
+Instead of:
+
+  func Find(f *os.File) ([]string, error)
+
+Use:
+
+  func Find(r io.Reader) ([]string, error)
+
+* 5.2 Test your business logic, not the Standard Library
+: demo file
+.html ./smallcode.html
+.code ./file/main.go /START OMIT/,/END OMIT/
+.code ./file/main_test.go /^func Test_DoMagic/,/^}/
+
+* 5.3 Use 'testdata' dir for test files if you need them
+: demo file
+Directory and file names that begin with "." or "_" are ignored by the go tool, as are directories named "testdata"
+
+  $ cat testdata/test1.txt
+  Some dummy data for test purposes only
+  
+.code ./file/main_test.go /^func Test_New/,/^}/ 
+
+* 5.4 ... Or temporary files
+: demo file
+.html ./smallcode.html
+.code ./file/main_test.go /^func Test_NewFromFile_Temp/,/^}/ 
+
+* 5.5 Wrap it in a helper func for cleaner test
+: demo file
+.html ./smallcode.html
+.code ./file/main_test.go /START HELPER OMIT/,/END HELPER OMIT/ 
