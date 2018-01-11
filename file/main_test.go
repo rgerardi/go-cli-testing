@@ -65,6 +65,7 @@ func Test_NewFromFile_TempFile(t *testing.T) {
 
 // START HELPER OMIT
 func createTempFile(t *testing.T, data []byte) (filename string, cleanFunc func()) {
+	t.Helper()
 	tempFile, err := ioutil.TempFile(os.TempDir(), "test2_")
 	if err != nil {
 		t.Fatalf("Cannot create temp file: %s\n", err)
@@ -83,8 +84,8 @@ func createTempFile(t *testing.T, data []byte) (filename string, cleanFunc func(
 
 func Test_NewFromFile_TempFile_Helper(t *testing.T) {
 	exp := []byte("Some test data.\n")
-	tempFile, cleanFunc := createTempFile(t, exp)
-	defer cleanFunc()
+	tempFile, cleanFunc := createTempFile(t, exp) // HL
+	defer cleanFunc()                             // HL
 
 	m, err := newFromFile(tempFile)
 
