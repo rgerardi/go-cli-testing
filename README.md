@@ -10,3 +10,5 @@ If you want to see the slides on your local computer, install the Go Present too
 Then start the `present` tool from the root directory where the `.slide` files are located.
 
 For additional info about the Go Present tool, check the [documentation](https://godoc.org/golang.org/x/tools/present)
+
+If you want to see the slides online: [https://rgerardi.github.io/go-cli-testing/](https://rgerardi.github.io/go-cli-testing/)
