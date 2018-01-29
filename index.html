@@ -1,0 +1,948 @@
+<!DOCTYPE html>
+<!-- saved from url=(0035)http://localhost:3999/preso.slide#1 -->
+<html><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+    <title>Testing CLI Tools with Go</title>
+    
+    <script>
+      var notesEnabled =  false ;
+    </script>
+    <script src="./static/slides.js"></script>
+
+    
+
+    <script>
+      
+      if (window["location"] && window["location"]["hostname"] == "talks.golang.org") {
+        var _gaq = _gaq || [];
+        _gaq.push(["_setAccount", "UA-11222381-6"]);
+        _gaq.push(["b._setAccount", "UA-49880327-6"]);
+        window.trackPageview = function() {
+          _gaq.push(["_trackPageview", location.pathname+location.hash]);
+          _gaq.push(["b._trackPageview", location.pathname+location.hash]);
+        };
+        window.trackPageview();
+        window.trackEvent = function(category, action, opt_label, opt_value, opt_noninteraction) {
+          _gaq.push(["_trackEvent", category, action, opt_label, opt_value, opt_noninteraction]);
+          _gaq.push(["b._trackEvent", category, action, opt_label, opt_value, opt_noninteraction]);
+        };
+      }
+    </script>
+  <meta name="viewport" content="width=device-width,height=device-height,initial-scale=1"><meta name="apple-mobile-web-app-capable" content="yes"></head>
+
+  <body style="display: none" class="loaded">
+
+    <section class="slides layout-widescreen">
+
+      <article class="current">
+        <h1>Testing CLI Tools with Go</h1>
+        
+        <h3>11 January 2018</h3>
+        
+          <div class="presenter">
+            
+  
+  <p>
+    Ricardo Gerardi
+  </p>
+  
+
+          </div>
+        
+          <div class="presenter">
+            
+          </div>
+        
+      </article>
+
+  
+  
+      <article class="next">
+      
+        <h3>Who?</h3>
+        
+<div class="image">
+  <img src="./img/2017-12-25-231043_621x309_scrot.png" height="500">
+</div>
+<figcaption><i>Gopher</i> courtesy of <a href="https://gopherize.me/" target="_blank">Gopherize.me</a></figcaption>
+      
+      </article>
+  
+  
+  
+      <article class="far-next">
+      
+        <h3>Introduction</h3>
+        
+<div class="image">
+  <img src="./img/DeathStar2.jpg" height="500">
+</div>
+
+      
+      </article>
+  
+  
+  
+      <article>
+      
+        <h3>What's wrong with this code?</h3>
+        
+  <div class="code">
+
+
+<pre><span num="1">package main</span>
+<span num="2"></span>
+<span num="3">import "fmt"</span>
+<span num="4"></span>
+<span num="5">func main() {</span>
+<span num="6"></span>
+<span num="7">    fmt.Println("Type the first number:")</span>
+<span num="8">    n1 := 0.0</span>
+<span num="9">    fmt.Scanf("%f\n", &amp;n1)</span>
+<span num="10"></span>
+<span num="11">    fmt.Println("Type the second number:")</span>
+<span num="12">    n2 := 0.0</span>
+<span num="13">    fmt.Scanf("%f\n", &amp;n2)</span>
+<span num="14"></span>
+<span num="15">    fmt.Println("The sum is:", n1+n2)</span>
+<span num="16">}</span>
+</pre>
+
+
+</div>
+
+      
+      </article>
+  
+  
+  
+      <article>
+      
+        <h3>1. Refactor code out of main()</h3>
+        <script>
+(function() {
+    var article = document.currentScript.parentElement;
+    window.addEventListener('load', function(){
+        var pres = article.querySelectorAll('div.code pre');
+        for (var i = 0; i < pres.length; i++) {
+            pres[i].style['font-size'] = '15px';
+            pres[i].style['line-height'] = '17px';
+            pres[i].style['margin-top'] = '4px';
+        }
+        var pres = article.querySelectorAll('div.code');
+        for (var i = 0; i < pres.length; i++) {
+            pres[i].style['margin-top'] = '4px';
+        }
+    });
+})();
+</script>
+<script>
+(function() {
+    var article = document.currentScript.parentElement;
+    window.addEventListener('load', function(){
+        var pres = article.querySelectorAll('p');
+        for (var i = 0; i < pres.length; i++) {
+            pres[i].style['font-size'] = '16px';
+            pres[i].style['line-height'] = '18px';
+            pres[i].style['margin-top'] = '2px';
+        }
+    });
+})();
+</script>
+
+  
+  <p style="font-size: 16px; line-height: 18px; margin-top: 2px;">
+    <i>main.go</i>
+  </p>
+  
+
+  <div class="code" style="margin-top: 4px;">
+
+
+<pre style="font-size: 15px; line-height: 17px; margin-top: 4px;"><span num="6">func main() {</span>
+<span num="7"></span>
+<span num="8">    fmt.Println("Type the first number:")</span>
+<span num="9">    n1 := 0.0</span>
+<span num="10">    fmt.Scanf("%f\n", &amp;n1)</span>
+<span num="11"></span>
+<span num="12">    fmt.Println("Type the second number:")</span>
+<span num="13">    n2 := 0.0</span>
+<span num="14">    fmt.Scanf("%f\n", &amp;n2)</span>
+<span num="15"></span>
+<span num="16">    fmt.Println("The sum is:", add(n1, n2))</span>
+<span num="17">}</span>
+<span num="18"></span>
+<span num="19"><b>func add(n1, n2 float64) float64 {</b></span>
+<span num="20">    <b>return n1 + n2</b></span>
+<span num="21"><b>}</b></span>
+</pre>
+
+
+</div>
+
+  
+  <p style="font-size: 16px; line-height: 18px; margin-top: 2px;">
+    <i>main test.go</i>
+  </p>
+  
+
+  <div class="code" style="margin-top: 4px;">
+
+
+<pre style="font-size: 15px; line-height: 17px; margin-top: 4px;"><span num="1">package main</span>
+<span num="2"></span>
+<span num="3">import (</span>
+<span num="4">    "testing"</span>
+<span num="5">)</span>
+<span num="6"></span>
+<span num="7">func Test_Add(t *testing.T) {</span>
+<span num="8">    sum := add(3.2, 6.8)</span>
+<span num="9"></span>
+<span num="10">    if sum != 10.0 {</span>
+<span num="11">        t.Errorf("Sum should be 10. Got %f.", sum)</span>
+<span num="12">    }</span>
+<span num="13">}</span>
+</pre>
+
+
+</div>
+
+      
+      </article>
+  
+  
+  
+      <article>
+      
+        <h3>2. Leverage interfaces to facilitate tests</h3>
+        
+  
+  <p>
+    E.g: Input data
+  </p>
+  
+<script>
+(function() {
+    var article = document.currentScript.parentElement;
+    window.addEventListener('load', function(){
+        var pres = article.querySelectorAll('div.code pre');
+        for (var i = 0; i < pres.length; i++) {
+            pres[i].style['font-size'] = '15px';
+            pres[i].style['line-height'] = '17px';
+            pres[i].style['margin-top'] = '4px';
+        }
+        var pres = article.querySelectorAll('div.code');
+        for (var i = 0; i < pres.length; i++) {
+            pres[i].style['margin-top'] = '4px';
+        }
+    });
+})();
+</script>
+
+  <div class="code" style="margin-top: 4px;">
+
+
+<pre style="font-size: 15px; line-height: 17px; margin-top: 4px;"><span num="10">func main() {</span>
+<span num="11">    <b>n1 := askNumber(os.Stdin)</b></span>
+<span num="12">    n2 := askNumber(os.Stdin)</span>
+<span num="13">    sum := add(n1, n2)</span>
+<span num="14">    printSum(os.Stdout, sum)</span>
+<span num="15">}</span>
+<span num="16"></span>
+<span num="17"><b>func askNumber(in io.Reader) float64 {</b></span>
+<span num="18">    fmt.Println("Type a number:")</span>
+<span num="19">    n := 0.0</span>
+<span num="20">    fmt.Fscanf(in, "%f\n", &amp;n)</span>
+<span num="21"></span>
+<span num="22">    return n</span>
+<span num="23">}</span>
+</pre>
+
+
+</div>
+
+  <div class="code" style="margin-top: 4px;">
+
+
+<pre style="font-size: 15px; line-height: 17px; margin-top: 4px;"><span num="17">func Test_askNumber(t *testing.T) {</span>
+<span num="18">    <b>in := bytes.NewBufferString("5")</b></span>
+<span num="19"></span>
+<span num="20">    var exp float64 = 5</span>
+<span num="21"></span>
+<span num="22">    res := askNumber(in)</span>
+<span num="23"></span>
+<span num="24">    if exp != res {</span>
+<span num="25">        t.Errorf("Expected %f, got %f\n", exp, res)</span>
+<span num="26">    }</span>
+<span num="27">}</span>
+</pre>
+
+
+</div>
+
+      
+      </article>
+  
+  
+  
+      <article>
+      
+        <h3>2.1. Leverage interfaces to facilitate tests</h3>
+        
+  
+  <p>
+    E.g: or Output...
+  </p>
+  
+<script>
+(function() {
+    var article = document.currentScript.parentElement;
+    window.addEventListener('load', function(){
+        var pres = article.querySelectorAll('div.code pre');
+        for (var i = 0; i < pres.length; i++) {
+            pres[i].style['font-size'] = '15px';
+            pres[i].style['line-height'] = '17px';
+            pres[i].style['margin-top'] = '4px';
+        }
+        var pres = article.querySelectorAll('div.code');
+        for (var i = 0; i < pres.length; i++) {
+            pres[i].style['margin-top'] = '4px';
+        }
+    });
+})();
+</script>
+
+  <div class="code" style="margin-top: 4px;">
+
+
+<pre style="font-size: 15px; line-height: 17px; margin-top: 4px;"><span num="31"><b>func printSum(out io.Writer, sum float64) {</b></span>
+<span num="32">    fmt.Fprintln(out, "The sum is:", sum)</span>
+<span num="33">}</span>
+</pre>
+
+
+</div>
+
+  <div class="code" style="margin-top: 4px;">
+
+
+<pre style="font-size: 15px; line-height: 17px; margin-top: 4px;"><span num="29">func Test_PrintSum(t *testing.T) {</span>
+<span num="30">    <b>out := bytes.NewBuffer([]byte{})</b></span>
+<span num="31"></span>
+<span num="32">    var sum float64 = 5</span>
+<span num="33">    exp := fmt.Sprintln("The sum is:", sum)</span>
+<span num="34">    printSum(out, sum)</span>
+<span num="35"></span>
+<span num="36">    if exp != out.String() {</span>
+<span num="37">        t.Errorf("Expected '%s', got '%s'\n", exp, out.String())</span>
+<span num="38">    }</span>
+<span num="39">}</span>
+</pre>
+
+
+</div>
+
+      
+      </article>
+  
+  
+  
+      <article>
+      
+        <h3>Test Coverage</h3>
+        
+  
+  <div class="code"><pre>$ go test -coverprofile=coverage.out
+$ go tool cover -html=coverage.out</pre></div>
+  
+
+<iframe src="./demo3/coverage.html" height="450" width="1000"></iframe>
+
+      
+      </article>
+  
+  
+  
+      <article>
+      
+        <h3>3. Putting it all together</h3>
+        <script>
+(function() {
+    var article = document.currentScript.parentElement;
+    window.addEventListener('load', function(){
+        var pres = article.querySelectorAll('div.code pre');
+        for (var i = 0; i < pres.length; i++) {
+            pres[i].style['font-size'] = '15px';
+            pres[i].style['line-height'] = '17px';
+            pres[i].style['margin-top'] = '4px';
+        }
+        var pres = article.querySelectorAll('div.code');
+        for (var i = 0; i < pres.length; i++) {
+            pres[i].style['margin-top'] = '4px';
+        }
+    });
+})();
+</script>
+
+  <div class="code" style="margin-top: 4px;">
+
+
+<pre style="font-size: 15px; line-height: 17px; margin-top: 4px;"><span num="10">func main() {</span>
+<span num="11">    os.Exit(run(os.Stdin, os.Stdout))</span>
+<span num="12">}</span>
+<span num="13"></span>
+<span num="14">func run(in io.Reader, out io.Writer) int {</span>
+<span num="15">    n1 := askNumber(in)</span>
+<span num="16">    n2 := askNumber(in)</span>
+<span num="17">    sum := add(n1, n2)</span>
+<span num="18">    printSum(out, sum)</span>
+<span num="19"></span>
+<span num="20">    return 0</span>
+<span num="21">}</span>
+</pre>
+
+
+</div>
+
+  <div class="code" style="margin-top: 4px;">
+
+
+<pre style="font-size: 15px; line-height: 17px; margin-top: 4px;"><span num="41">func Test_Run(t *testing.T) {</span>
+<span num="42"></span>
+<span num="43">    <b>in := bytes.NewBufferString("5\n5\n")</b></span>
+<span num="44">    <b>out := bytes.NewBuffer([]byte{})</b></span>
+<span num="45"></span>
+<span num="46">    expRetCode := 0</span>
+<span num="47">    exp := fmt.Sprintln("The sum is:", 10)</span>
+<span num="48"></span>
+<span num="49">    <b>retCode := run(in, out)</b></span>
+<span num="50"></span>
+<span num="51">    if expRetCode != retCode {</span>
+<span num="52">        t.Errorf("Expected %d, got %d\n", expRetCode, retCode)</span>
+<span num="53">    }</span>
+<span num="54"></span>
+<span num="55">    if exp != out.String() {</span>
+<span num="56">        t.Errorf("Expected '%s', got '%s'\n", exp, out.String())</span>
+<span num="57">    }</span>
+<span num="58"></span>
+<span num="59">}</span>
+</pre>
+
+
+</div>
+
+      
+      </article>
+  
+  
+  
+      <article>
+      
+        <h3>WARNING: Test Coverage can be misleading</h3>
+        
+  <ul>
+  
+    <li>It does not indicate completeness</li>
+  
+    <li>It is one of the indicators you should use</li>
+  
+  </ul>
+
+  <ul>
+  
+    <li>Include different cases</li>
+  
+    <li>Include edge cases</li>
+  
+    <li>Test error conditions</li>
+  
+    <li>Go test cover has other "modes"</li>
+  
+  </ul>
+
+  
+  <p>
+    <a href="https://blog.golang.org/cover" target="_blank">Test cover blog article</a>
+  </p>
+  
+
+      
+      </article>
+  
+  
+  
+      <article>
+      
+        <h3>4. Use Table-Driven tests and Sub-tests</h3>
+        <script>
+(function() {
+    var article = document.currentScript.parentElement;
+    window.addEventListener('load', function(){
+        var pres = article.querySelectorAll('div.code pre');
+        for (var i = 0; i < pres.length; i++) {
+            pres[i].style['font-size'] = '15px';
+            pres[i].style['line-height'] = '17px';
+            pres[i].style['margin-top'] = '4px';
+        }
+        var pres = article.querySelectorAll('div.code');
+        for (var i = 0; i < pres.length; i++) {
+            pres[i].style['margin-top'] = '4px';
+        }
+    });
+})();
+</script>
+
+  <div class="code" style="margin-top: 4px;">
+
+
+<pre style="font-size: 15px; line-height: 17px; margin-top: 4px;"><span num="45">func Test_Run(t *testing.T) {</span>
+<span num="46">    <b>tests := []struct {</b></span>
+<span num="47">        <b>name       string</b></span>
+<span num="48">        <b>n1         string</b></span>
+<span num="49">        <b>n2         string</b></span>
+<span num="50">        <b>expRetCode int</b></span>
+<span num="51">        <b>expSum     float64</b></span>
+<span num="52">    <b>}{</b></span>
+<span num="53">        <b>{"2 ints", "5", "5", 0, 10},</b></span>
+<span num="54">        <b>{"2 floats", "3.2", "2.4", 0, 5.6},</b></span>
+<span num="55">        <b>{"blank", "", "", 1, 0},</b></span>
+<span num="56">        <b>{"first text", "r", "4", 1, 0},</b></span>
+<span num="57">        <b>{"second text", "4", "r", 1, 0},</b></span>
+<span num="58">    }</span>
+<span num="59"></span>
+<span num="60">    for _, test := range tests {</span>
+<span num="61">        <b>t.Run(test.name, func(t *testing.T) {</b></span>
+<span num="62">            in := bytes.NewBufferString(fmt.Sprintf("%s\n%s\n", test.n1, test.n2))</span>
+<span num="63">            out := bytes.NewBuffer([]byte{})</span>
+<span num="64">            exp := fmt.Sprintln("The sum is:", test.expSum)</span>
+<span num="65">            if test.expRetCode != 0 {</span>
+<span num="66">                exp = ""</span>
+<span num="67">            }</span>
+<span num="68">            retCode := run(in, out)</span>
+<span num="69"></span>
+<span num="70">            t.Log("Message:", out.String())</span>
+<span num="71">            if test.expRetCode != retCode {</span>
+<span num="72">                t.Errorf("Expected %d, got %d\n", test.expRetCode, retCode)</span>
+<span num="73">            }</span>
+<span num="74">            if exp != out.String() {</span>
+<span num="75">                t.Errorf("Expected '%s', got '%s'\n", exp, out.String())</span>
+<span num="76">            }</span>
+<span num="77">        })</span>
+<span num="78">    }</span>
+<span num="79">}</span>
+</pre>
+
+
+</div>
+
+      
+      </article>
+  
+  
+  
+      <article>
+      
+        <h3>4.1. Use Table-Driven tests and Sub-tests</h3>
+        <script>
+(function() {
+    var article = document.currentScript.parentElement;
+    window.addEventListener('load', function(){
+        var pres = article.querySelectorAll('div.code pre');
+        for (var i = 0; i < pres.length; i++) {
+            pres[i].style['font-size'] = '15px';
+            pres[i].style['line-height'] = '17px';
+            pres[i].style['margin-top'] = '4px';
+        }
+        var pres = article.querySelectorAll('div.code');
+        for (var i = 0; i < pres.length; i++) {
+            pres[i].style['margin-top'] = '4px';
+        }
+    });
+})();
+</script>
+
+  
+  <div class="code" style="margin-top: 4px;"><pre style="font-size: 15px; line-height: 17px; margin-top: 4px;">$ go test -v . 
+
+=== RUN   Test_Add
+--- PASS: Test_Add (0.00s)
+=== RUN   Test_askNumber
+--- PASS: Test_askNumber (0.00s)
+=== RUN   Test_PrintSum
+--- PASS: Test_PrintSum (0.00s)
+=== RUN   Test_Run
+=== RUN   Test_Run/2_ints
+=== RUN   Test_Run/2_floats
+=== RUN   Test_Run/blank
+=== RUN   Test_Run/first_text
+=== RUN   Test_Run/second_text
+--- PASS: Test_Run (0.00s)
+    --- PASS: Test_Run/2_ints (0.00s)
+        main_test.go:70: Message: The sum is: 10
+    --- PASS: Test_Run/2_floats (0.00s)
+        main_test.go:70: Message: The sum is: 5.6
+    --- PASS: Test_Run/blank (0.00s)
+        main_test.go:70: Message:
+    --- PASS: Test_Run/first_text (0.00s)
+        main_test.go:70: Message:
+    --- PASS: Test_Run/second_text (0.00s)
+        main_test.go:70: Message:
+PASS
+ok      github.com/rgerardi/go-cli-testing/demo6      0.002s</pre></div>
+  
+
+      
+      </article>
+  
+  
+  
+      <article>
+      
+        <h2>5. Use different techniques to test files and flags</h2>
+      
+      </article>
+  
+  
+  
+      <article>
+      
+        <h3>Considerations</h3>
+        
+  <ul>
+  
+    <li>Depends on the requirements/testing goals</li>
+  
+    <li>We don't want to test the Std Lib implementation</li>
+  
+    <li>We want to test our business logic</li>
+  
+    <li>Trust the Std Lib and 3rd party packages you use</li>
+  
+  </ul>
+
+      
+      </article>
+  
+  
+  
+      <article>
+      
+        <h3>5.1 Require interfaces instead of *os.File</h3>
+        
+  
+  <p>
+    Consider the minimal interface that implements only what is required by the function
+  </p>
+  
+
+  
+  <p>
+    Instead of:
+  </p>
+  
+
+  
+  <div class="code"><pre>func Find(f *os.File) ([]string, error)</pre></div>
+  
+
+  
+  <p>
+    Use:
+  </p>
+  
+
+  
+  <div class="code"><pre>func Find(r io.Reader) ([]string, error)</pre></div>
+  
+
+      
+      </article>
+  
+  
+  
+      <article>
+      
+        <h3>5.2 Test your business logic, not the Standard Library</h3>
+        <script>
+(function() {
+    var article = document.currentScript.parentElement;
+    window.addEventListener('load', function(){
+        var pres = article.querySelectorAll('div.code pre');
+        for (var i = 0; i < pres.length; i++) {
+            pres[i].style['font-size'] = '15px';
+            pres[i].style['line-height'] = '17px';
+            pres[i].style['margin-top'] = '4px';
+        }
+        var pres = article.querySelectorAll('div.code');
+        for (var i = 0; i < pres.length; i++) {
+            pres[i].style['margin-top'] = '4px';
+        }
+    });
+})();
+</script>
+
+  <div class="code" style="margin-top: 4px;">
+
+
+<pre style="font-size: 15px; line-height: 17px; margin-top: 4px;"><span num="9">type myStruct struct {</span>
+<span num="10">    data []byte</span>
+<span num="11">}</span>
+<span num="12"></span>
+<span num="13">func newFromFile(filename string) (*myStruct, error) {</span>
+<span num="14">    data, err := ioutil.ReadFile(filename)</span>
+<span num="15">    if err != nil {</span>
+<span num="16">        return nil, err</span>
+<span num="17">    }</span>
+<span num="18"></span>
+<span num="19">    return &amp;myStruct{data: data}, nil</span>
+<span num="20">}</span>
+<span num="21"></span>
+<span num="22">func (m *myStruct) save(filename string) error {</span>
+<span num="23">    return ioutil.WriteFile(filename, m.data, 0644)</span>
+<span num="24">}</span>
+<span num="25"></span>
+<span num="26"><b>func (m *myStruct) doMagic() {</b></span>
+<span num="27">    <b>m.data = bytes.ToUpper(m.data)</b></span>
+<span num="28"><b>}</b></span>
+</pre>
+
+
+</div>
+
+  <div class="code" style="margin-top: 4px;">
+
+
+<pre style="font-size: 15px; line-height: 17px; margin-top: 4px;"><span num="11">func Test_DoMagic(t *testing.T) {</span>
+<span num="12">    inStr := "Some test Data..."</span>
+<span num="13">    m := myStruct{</span>
+<span num="14">        data: []byte(inStr),</span>
+<span num="15">    }</span>
+<span num="16"></span>
+<span num="17">    exp := strings.ToUpper(inStr)</span>
+<span num="18">    m.doMagic()</span>
+<span num="19"></span>
+<span num="20">    if exp != string(m.data) {</span>
+<span num="21">        t.Errorf("Expected '%s', got '%s'\n", exp, m.data)</span>
+<span num="22">    }</span>
+<span num="23">}</span>
+</pre>
+
+
+</div>
+
+      
+      </article>
+  
+  
+  
+      <article>
+      
+        <h3>5.3 Use 'testdata' dir for test files if you need them</h3>
+        
+  
+  <p>
+    Directory and file names that begin with "." or "_" are ignored by the go tool, as are directories named "testdata"
+  </p>
+  
+
+  
+  <div class="code"><pre>$ cat testdata/test1.txt
+Some dummy data for test purposes only</pre></div>
+  
+
+  <div class="code">
+
+
+<pre><span num="25">func Test_NewFromFile(t *testing.T) {</span>
+<span num="26">    exp := "Some dummy data for test purposes only\n\n"</span>
+<span num="27"></span>
+<span num="28">    m, err := newFromFile("./testdata/test1.txt")</span>
+<span num="29"></span>
+<span num="30">    if err != nil {</span>
+<span num="31">        t.Fatalf("There should be no error. Got %s\n", err)</span>
+<span num="32">    }</span>
+<span num="33"></span>
+<span num="34">    if exp != string(m.data) {</span>
+<span num="35">        t.Errorf("Expected '%s', got '%s'\n", exp, m.data)</span>
+<span num="36">    }</span>
+<span num="37">}</span>
+</pre>
+
+
+</div>
+
+      
+      </article>
+  
+  
+  
+      <article>
+      
+        <h3>5.4 ... Or temporary files</h3>
+        <script>
+(function() {
+    var article = document.currentScript.parentElement;
+    window.addEventListener('load', function(){
+        var pres = article.querySelectorAll('div.code pre');
+        for (var i = 0; i < pres.length; i++) {
+            pres[i].style['font-size'] = '15px';
+            pres[i].style['line-height'] = '17px';
+            pres[i].style['margin-top'] = '4px';
+        }
+        var pres = article.querySelectorAll('div.code');
+        for (var i = 0; i < pres.length; i++) {
+            pres[i].style['margin-top'] = '4px';
+        }
+    });
+})();
+</script>
+
+  <div class="code" style="margin-top: 4px;">
+
+
+<pre style="font-size: 15px; line-height: 17px; margin-top: 4px;"><span num="39">func Test_NewFromFile_TempFile(t *testing.T) {</span>
+<span num="40">    tempFile, err := ioutil.TempFile(os.TempDir(), "test1_")</span>
+<span num="41">    if err != nil {</span>
+<span num="42">        t.Fatalf("Cannot create temp file: %s\n", err)</span>
+<span num="43">    }</span>
+<span num="44">    defer os.Remove(tempFile.Name())</span>
+<span num="45"></span>
+<span num="46">    exp := []byte("Some test data.\n")</span>
+<span num="47">    if _, err := tempFile.Write(exp); err != nil {</span>
+<span num="48">        t.Fatalf("Cannot write to temp file: %s\n", err)</span>
+<span num="49">    }</span>
+<span num="50"></span>
+<span num="51">    if err := tempFile.Close(); err != nil {</span>
+<span num="52">        t.Fatalf("Cannot close temp file: %s\n", err)</span>
+<span num="53">    }</span>
+<span num="54"></span>
+<span num="55">    m, err := newFromFile(tempFile.Name())</span>
+<span num="56"></span>
+<span num="57">    if err != nil {</span>
+<span num="58">        t.Fatalf("There should be no error. Got %s\n", err)</span>
+<span num="59">    }</span>
+<span num="60"></span>
+<span num="61">    if bytes.Compare(exp, m.data) != 0 {</span>
+<span num="62">        t.Errorf("Expected '%s', got '%s'\n", exp, m.data)</span>
+<span num="63">    }</span>
+<span num="64">}</span>
+</pre>
+
+
+</div>
+
+      
+      </article>
+  
+  
+  
+      <article>
+      
+        <h3>5.5 Wrap it in a helper func for cleaner test</h3>
+        <script>
+(function() {
+    var article = document.currentScript.parentElement;
+    window.addEventListener('load', function(){
+        var pres = article.querySelectorAll('div.code pre');
+        for (var i = 0; i < pres.length; i++) {
+            pres[i].style['font-size'] = '15px';
+            pres[i].style['line-height'] = '17px';
+            pres[i].style['margin-top'] = '4px';
+        }
+        var pres = article.querySelectorAll('div.code');
+        for (var i = 0; i < pres.length; i++) {
+            pres[i].style['margin-top'] = '4px';
+        }
+    });
+})();
+</script>
+
+  <div class="code" style="margin-top: 4px;">
+
+
+<pre style="font-size: 15px; line-height: 17px; margin-top: 4px;"><span num="67">func createTempFile(t *testing.T, data []byte) (filename string, cleanFunc func()) {</span>
+<span num="68">    t.Helper()</span>
+<span num="69">    tempFile, err := ioutil.TempFile(os.TempDir(), "test2_")</span>
+<span num="70">    if err != nil {</span>
+<span num="71">        t.Fatalf("Cannot create temp file: %s\n", err)</span>
+<span num="72">    }</span>
+<span num="73"></span>
+<span num="74">    if _, err := tempFile.Write(data); err != nil {</span>
+<span num="75">        t.Fatalf("Cannot write to temp file: %s\n", err)</span>
+<span num="76">    }</span>
+<span num="77"></span>
+<span num="78">    if err := tempFile.Close(); err != nil {</span>
+<span num="79">        t.Fatalf("Cannot close temp file: %s\n", err)</span>
+<span num="80">    }</span>
+<span num="81"></span>
+<span num="82">    return tempFile.Name(), func() { os.Remove(tempFile.Name()) }</span>
+<span num="83">}</span>
+<span num="84"></span>
+<span num="85">func Test_NewFromFile_TempFile_Helper(t *testing.T) {</span>
+<span num="86">    exp := []byte("Some test data.\n")</span>
+<span num="87">    <b>tempFile, cleanFunc := createTempFile(t, exp)</b></span>
+<span num="88">    <b>defer cleanFunc()</b></span>
+<span num="89"></span>
+<span num="90">    m, err := newFromFile(tempFile)</span>
+<span num="91"></span>
+<span num="92">    if err != nil {</span>
+<span num="93">        t.Fatalf("There should be no error. Got %s\n", err)</span>
+<span num="94">    }</span>
+<span num="95"></span>
+<span num="96">    if bytes.Compare(exp, m.data) != 0 {</span>
+<span num="97">        t.Errorf("Expected '%s', got '%s'\n", exp, m.data)</span>
+<span num="98">    }</span>
+<span num="99">}</span>
+</pre>
+
+
+</div>
+
+      
+      </article>
+  
+  
+
+      <article>
+        <h3>Thank you</h3>
+        
+          <div class="presenter">
+            
+  
+  <p>
+    Ricardo Gerardi
+  </p>
+  
+<p class="link"><a href="http://twitter.com/ricardogerardi" target="_blank">@ricardogerardi</a></p><p class="link"><a href="http://github.com/rgerardi" target="_blank">http://github.com/rgerardi</a></p>
+          </div>
+        
+          <div class="presenter">
+            <p class="link"><a href="https://github.com/rgerardi/go-cli-testing" target="_blank">https://github.com/rgerardi/go-cli-testing</a></p>
+          </div>
+        
+      </article>
+
+    <div class="slide-area" id="prev-slide-area"></div><div class="slide-area" id="next-slide-area"></div></section>
+
+    <div id="help" style="display: none;">
+      Use the left and right arrow keys or click the left and right
+      edges of the page to navigate between slides.<br>
+      (Press 'H' or navigate to hide this message.)
+    </div>
+
+    
+    <script src="./static/play.js"></script>
+    
+
+    <script>
+      (function() {
+        
+        if (window["location"] && window["location"]["hostname"] == "talks.golang.org") {
+          var ga = document.createElement("script"); ga.type = "text/javascript"; ga.async = true;
+          ga.src = ("https:" == document.location.protocol ? "https://ssl" : "http://www") + ".google-analytics.com/ga.js";
+          var s = document.getElementsByTagName("script")[0]; s.parentNode.insertBefore(ga, s);
+        }
+      })();
+    </script>
+  
+
+<link rel="stylesheet" type="text/css" href="./static/css"><link rel="stylesheet" type="text/css" href="./static/styles.css"><div id="libraryextension_installed" data-libraries="[&quot;lfba904d942c09bce5d0867236ef0e376&quot;]"></div></body></html>
