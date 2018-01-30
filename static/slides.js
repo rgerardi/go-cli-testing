@@ -442,19 +442,19 @@ function handleBodyKeyDown(event) {
 };
 
 function scaleSmallViewports() {
-  //var el = document.querySelector('.slides');
-  //var transform = '';
-  //var sWidthPx = 1250;
-  //var sHeightPx = 750;
-  //var sAspectRatio = sWidthPx / sHeightPx;
-  //var wAspectRatio = window.innerWidth / window.innerHeight;
+  var el = document.querySelector('.slides');
+  var transform = '';
+  var sWidthPx = 1250;
+  var sHeightPx = 750;
+  var sAspectRatio = sWidthPx / sHeightPx;
+  var wAspectRatio = window.innerWidth / window.innerHeight;
 
-  //if (wAspectRatio <= sAspectRatio && window.innerWidth < sWidthPx) {
-    //transform = 'scale(' + window.innerWidth / sWidthPx + ')';
-  //} else if (window.innerHeight < sHeightPx) {
-    //transform = 'scale(' + window.innerHeight / sHeightPx + ')';
-  //}
-  //el.style.transform = transform;
+  if (wAspectRatio <= sAspectRatio && window.innerWidth < sWidthPx) {
+    transform = 'scale(' + window.innerWidth / sWidthPx + ')';
+  } else if (window.innerHeight < sHeightPx) {
+    transform = 'scale(' + window.innerHeight / sHeightPx + ')';
+  }
+  el.style.transform = transform;
 }
 
 function addEventListeners() {
